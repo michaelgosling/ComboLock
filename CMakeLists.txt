@@ -3,4 +3,4 @@ project(ComboLock)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(ComboLock main.cpp)
+add_executable(ComboLock main.cpp LinkedList.cpp LinkedList.h)
