@@ -27,7 +27,7 @@ int main(int argc, char *args[]) {
     int currPosition = 0;
     bool programFinished = false;
     bool save = false;
-    std::regex numRegex("[0-9]|[0-4][0-9]");
+    std::regex numRegex("[a-zA-z] ([0-9]|[0-4][0-9])");
 
     while (!programFinished) {
         // print list
@@ -68,7 +68,7 @@ int main(int argc, char *args[]) {
             int value = 0;
             if (token != nullptr) {
                 bool validNum = false;
-                if (std::regex_match(token, numRegex)) {
+                if (std::regex_match(userInput, numRegex)) {
                     validNum = true;
                     value = atoi(token);
                 }
