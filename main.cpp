@@ -1,7 +1,9 @@
 #include <iostream>
 #include <algorithm>
 #include <cstring>
+#include <fstream>
 #include "LinkedList.h"
+#include <regex>
 
 std::string StringToUpper(std::string str) {
     std::transform(str.begin(), str.end(), str.begin(), ::toupper);
@@ -9,19 +11,23 @@ std::string StringToUpper(std::string str) {
     return str;
 }
 
-int main() {
+int main(int argc, char *args[]) {
+    std::string fileName;
+
+
+    // deal with arguments
+    if (argc == 2)
+        fileName = args[1];
+    else {
+        std::cout << "You must provide a file name!";
+        return 0;
+    }
+
     LinkedList list;
     int currPosition = 0;
     bool programFinished = false;
-
-    // debugging
-//    srand(time(nullptr));
-//    for (int i = 0; i < 7; i++){
-//        std::cout << "Init "<< i << ": " << ((list.Get(i)->direction == Left) ? "L" : "R") << list.Get(i)->data << std::endl;
-//        int newNum = rand() % 50;
-//        list.Set(i, newNum);
-//        std::cout << "After "<< i << ": " << ((list.Get(i)->direction == Left) ? "L" : "R") << list.Get(i)->data << std::endl;
-//    }
+    bool save = false;
+    std::regex numRegex("[0-9]|[0-4][0-9]");
 
     while (!programFinished) {
         // print list
@@ -36,20 +42,22 @@ int main() {
         std::cout << std::endl << "(Q)uit without save. (E)xit with saving. (G)oto position. " << std::endl
                   << " (S)ubstitute. (D)elete. (R)eset";
         std::cout << std::endl << "Choice: ";
-        char *userInput;
-        std::cin.getline(userInput, 256);
+        char userInput[20] = "";
+        std::cin.getline(userInput, 20);
         auto firstLetter = StringToUpper(userInput).c_str()[0];
         if (firstLetter == 'Q') {
             std::cout << std::endl << "Quitting without saving...";
             programFinished = true;
         } else if (firstLetter == 'E') {
-            // TODO: Save and exit code
+            std::cout << std::endl << "Quitting and saving...";
+            programFinished = true;
+            save = true;
         } else if (firstLetter == 'D')
             list.Set(currPosition, 0);
-        else if (firstLetter == 'R')
+        else if (firstLetter == 'R') {
             for (int i = 0; i < NUM_OF_TURNS; i++)
                 list.Set(i, 0);
-        else {
+        } else {
             // copy user input to a char array, split into tokens via space character
             char input[strlen(userInput) + 1];
             for (int i = 0; i < strlen(userInput); i++)
@@ -58,19 +66,35 @@ int main() {
             strtok(input, " "); // toss first token
             token = strtok(nullptr, " ");
             int value = 0;
-            if (token != nullptr)
-                value = atoi(token);
+            if (token != nullptr) {
+                bool validNum = false;
+                if (std::regex_match(token, numRegex)) {
+                    validNum = true;
+                    value = atoi(token);
+                }
 
-            // use second token differently depending on first token
-            if (firstLetter == 'G')
-                currPosition = value - 1;
-            else if (firstLetter == 'S')
-                list.Set(currPosition, value);
-            else
-                std::cout << std::endl << "Invalid command!" << std::endl;
+                // use second token differently depending on first token
+                if (firstLetter == 'G' && validNum)
+                    currPosition = value - 1;
+                else if (firstLetter == 'S' && validNum)
+                    list.Set(currPosition, value);
+                else
+                    std::cout << std::endl << "Invalid command!" << std::endl;
+
+            }
         }
     }
 
+    // save routine
+    if (save) {
+        std::ofstream myFile;
+        myFile.open(fileName, std::ios::out);
+        if (myFile.is_open()) {
+            myFile << list;
+            myFile.close();
+        } else
+            std::cout << std::endl << "Could not open file!";
+    }
 
     return 0;
 }
